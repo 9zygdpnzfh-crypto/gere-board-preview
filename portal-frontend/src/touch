@@ -1,0 +1,12 @@
+import CurrencyDisplay from './CurrencyDisplay';
+
+function App() {
+  return (
+    <div>
+      <CurrencyDisplay />
+    </div>
+  );
+}
+
+export default App;
+

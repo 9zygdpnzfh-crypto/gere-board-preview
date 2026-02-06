@@ -1,0 +1,40 @@
+/* Dashboard Layout */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-item {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Media Queries for Smaller Screens */
+@media (max-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Focus State for Buttons */
+button:focus {
+  outline: 3px solid #007bff;
+  background-color: #f0f8ff;
+}
+:root {
+  --state-safe-active: #3CB371;
+}
+
+@keyframes gentlePulse {
+  0%   { transform: scale(1);   opacity: 1; }
+  50%  { transform: scale(1.02); opacity: 0.95; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+.quota-update {
+  animation: gentlePulse 1.6s ease-out 1;
+  background-color: var(--state-safe-active);
+}

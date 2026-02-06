@@ -1,0 +1,6 @@
+.sensor-feedback {
+  padding: 20px;
+  text-align: center;
+  color: white;
+  transition: background-color 1s;
+}

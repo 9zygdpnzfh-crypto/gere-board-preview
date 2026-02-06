@@ -1,0 +1,31 @@
+import React, { useEffect, useState } from 'react';
+
+const LiveQuotaUpdates = () => {
+  const [quotaData, setQuotaData] = useState({ totalQuota: 0, usedQuota: 0 
+});
+
+  useEffect(() => {
+    const socket = new WebSocket('ws://localhost:8080');
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'quota-update') {
+        setQuotaData(data.data);
+      }
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  return (
+    <div>
+      <h3>Real-Time Quota Data</h3>
+      <p>Total Quota: {quotaData.totalQuota}</p>
+      <p>Used Quota: {quotaData.usedQuota}</p>
+    </div>
+  );
+};
+
+export default LiveQuotaUpdates;

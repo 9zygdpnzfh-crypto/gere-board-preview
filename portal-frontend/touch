@@ -1,0 +1,38 @@
+import { useEffect, useState } from 'react';
+
+type Rate = {
+  base_currency: string;
+  target_currency: string;
+  rate: number;
+};
+
+export default function CurrencyDisplay() {
+  const [rates, setRates] = useState<Rate[]>([]);
+
+  useEffect(() => {
+    const socket = new WebSocket('ws://localhost:8080');
+
+    socket.onmessage = event => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'currency_update') {
+        setRates(message.payload);
+      }
+    };
+
+    return () => socket.close();
+  }, []);
+
+  return (
+    <div style={{ backgroundColor: '#e6f0ff', padding: '1rem' }}>
+      <h2>Live Exchange Rates</h2>
+      <ul>
+        {rates.map((rate, index) => (
+          <li key={index}>
+            {rate.base_currency} → {rate.target_currency}: {rate.rate}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+

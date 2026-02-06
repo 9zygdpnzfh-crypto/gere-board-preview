@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AA911 Admin Panel</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    h2 { margin-top: 30px; }
+    button { margin-left: 10px; }
+    .box { background: #f4f4f4; padding: 10px; margin-top: 10px; }
+    .event { border-bottom: 1px solid #ddd; padding: 5px 0; }
+  </style>
+</head>
+<body>
+
+<h1>AA911 Admin Dashboard</h1>
+
+<h2>Pending Organizations</h2>
+<button onclick="loadPending()">Refresh</button>
+<div id="pending" class="box"></div>
+
+<h2>Quota Usage</h2>
+<button onclick="loadQuotas()">Refresh</button>
+<div id="quotas" class="box"></div>
+
+<h2>Live Events</h2>
+<div id="events" class="box"></div>
+
+<script>
+const token = prompt("Paste ADMIN JWT token");
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AA911 Admin</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    section { margin-bottom: 30px; }
+    h2 { border-bottom: 1px solid #ccc; }
+    pre { background: #f5f5f5; padding: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>AA911 Admin Panel</h1>
+
+<section>
+  <h2>Pending Approvals</h2>
+  <pre id="approvals"></pre>
+</section>
+
+<section>
+  <h2>Quota Usage</h2>
+  <pre id="quota"></pre>
+</section>
+
+<section>
+  <h2>Live Events</h2>
+  <pre id="events"></pre>
+</section>
+
+<script>
+const token = prompt("Paste admin JWT");
+
+fetch('/admin/approvals', {
+  headers: { Authorization: `Bearer ${token}` }
+}).then(r => r.json()).then(d =>
+  approvals.textContent = JSON.stringify(d, null, 2)
+);
+
+fetch('/admin/quota-usage', {
+  headers: { Authorization: `Bearer ${token}` }
+}).then(r => r.json()).then(d =>
+  quota.textContent = JSON.stringify(d, null, 2)
+);
+
+fetch('/admin/events', {
+  headers: { Authorization: `Bearer ${token}` }
+}).then(r => r.json()).then(d =>
+  events.textContent = JSON.stringify(d, null, 2)
+);
+</script>
+
+</body>
+</html>
+
+/* ---------- Pending Orgs ---------- */
+function loadPending() {
+  fetch('http://localhost:3000/admin/organizations/pending', {
+    headers: { Authorization: 'Bearer ' + token }
+  })
+  .then(r => r.json())
+  .then(d => {
+    const el = document.getElementById('pending');
+    el.innerHTML = '';
+    d.pending.forEach(o => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <b>${o.name}</b> (${o.sector})
+        <button onclick="approveOrg(${o.id})">Approve</button>
+      `;
+      el.appendChild(div);
+    });
+  });
+}
+
+function approveOrg(id) {
+  fetch(`http://localhost:3000/admin/organizations/${id}/approve`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(loadPending);
+}
+
+/* ---------- Quotas ---------- */
+function loadQuotas() {
+  fetch('http://localhost:3000/quotas')
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById('quotas');
+      el.innerHTML = '';
+      d.quotas.forEach(q => {
+        el.innerHTML += `
+          <div>
+            <b>${q.sector}</b>: ${q.used} / ${q.monthly_limit}
+          </div>
+        `;
+      });
+    });
+}
+
+/* ---------- WebSocket ---------- */
+const ws = new WebSocket('ws://localhost:8080');
+ws.onmessage = e => {
+  const ev = JSON.parse(e.data);
+  const div = document.createElement('div');
+  div.className = 'event';
+  div.textContent = JSON.stringify(ev);
+  document.getElementById('events').prepend(div);
+};
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AA911 Admin Panel</title>
+</head>
+<body>
+  <h1>AA911 Admin Dashboard</h1>
+
+  <h2>Pending Organizations</h2>
+  <ul id="orgs"></ul>
+
+  <h2>Quota Usage</h2>
+  <pre id="quotas"></pre>
+
+  <h2>Live Events</h2>
+  <ul id="events"></ul>
+
+<script>
+const token = localStorage.getItem('token');
+
+fetch('/admin/organizations/pending', {
+  headers: { Authorization: `Bearer ${token}` }
+})
+.then(r => r.json())
+.then(d => {
+  d.pending.forEach(o => {
+    const li = document.createElement('li');
+    li.innerHTML = `${o.name} (${o.sector})
+      <button onclick="approve(${o.id})">Approve</button>`;
+    document.getElementById('orgs').appendChild(li);
+  });
+});
+
+function approve(id) {
+  fetch(`/admin/organizations/${id}/approve`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(() => location.reload());
+}
+
+// Quotas
+fetch('/admin/quotas', {
+  headers: { Authorization: `Bearer ${token}` }
+})
+.then(r => r.json())
+.then(d => {
+  document.getElementById('quotas').textContent =
+    JSON.stringify(d, null, 2);
+});
+
+// WebSocket live feed
+const ws = new WebSocket('ws://localhost:8080');
+ws.onmessage = msg => {
+  const e = document.createElement('li');
+  e.textContent = msg.data;
+  document.getElementById('events').appendChild(e);
+};
+</script>
+</body>
+</html>
+/public/partner.html
+
+<h1>Partner Dashboard</h1>
+<pre id="data"></pre>
+
+<script>
+fetch('/partner/dashboard', {
+  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+})
+.then(r => r.json())
+.then(d => {
+  document.getElementById('data').textContent =
+    JSON.stringify(d, null, 2);
+});
+</script>
+
+<div id="timeline" style="width: 100%; padding: 20px;"></div>
+#timeline {
+  border: 1px solid #ccc;
+  padding: 20px;
+  background-color: #f9f9f9;
+  margin-top: 30px;
+}
+
+.timeline-event {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.5s ease-in-out;
+}
+
+.timeline-event .status {
+  font-weight: bold;
+}
+
+.timeline-event.pending {
+  background-color: #fff3b0;
+}
+
+.timeline-event.approved {
+  background-color: #a5d8ff;
+}
+
+.timeline-event.active {
+  background-color: #8cdda8;
+}
+
+.timeline-event.rejected {
+  background-color: #ff6f61;
+}
+
+.timeline-event .timestamp {
+  font-size: 12px;
+  color: #888;
+}
+
+async function fetchTimeline(userId) {
+  const response = await fetch(`/users/${userId}/timeline`);
+  const data = await response.json();
+  const timelineContainer = document.getElementById('timeline');
+  timelineContainer.innerHTML = '';  // Clear any previous timeline
+
+  data.timeline.forEach(event => {
+    const eventDiv = document.createElement('div');
+    eventDiv.className = `timeline-event ${event.event_type}`;
+    eventDiv.innerHTML = `
+      <div class="status">${event.event_type}</div>
+      <div class="timestamp">${new 
+Date(event.created_at).toLocaleString()}</div>
+    `;
+    timelineContainer.appendChild(eventDiv);
+  });
+}
+function playNotificationSound(eventType) {
+  if (eventType === 'quota_used') {
+    const audio = new Audio('/sounds/notification.mp3');
+    audio.play();
+  }
+}
+function displayEvent(eventType) {
+  const eventColorMap = {
+    pending: 'yellow',
+    approved: 'blue',
+    active: 'green',
+    rejected: 'red',
+    quota_used: 'orange'
+  };
+
+  const eventElement = document.createElement('div');
+  eventElement.style.backgroundColor = eventColorMap[eventType];
+  document.body.appendChild(eventElement);
+}
+const element = document.getElementById('timeline');
+element.style.transition = "transform 0.5s ease-in-out";
+element.style.transform = "scale(1.1)";
+
+
