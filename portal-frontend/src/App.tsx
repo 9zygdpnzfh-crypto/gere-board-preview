@@ -3,7 +3,7 @@ import { motionStyles } from './sensory/motionMap';
 import CurrencyBoard from './components/CurrencyBoard';
 
 function App() {
-  const { message } = useWebSocket('ws://localhost:3000/ws');
+  const { message } = useWebSocket('ws://localhost:8080');
 
   const style = {
     minHeight: '100vh',
